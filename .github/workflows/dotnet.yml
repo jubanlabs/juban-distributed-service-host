@@ -1,0 +1,52 @@
+name: build
+
+on:
+  push:
+    branches: [ main ]
+    tags: 
+      - 'v*'
+  pull_request:
+    branches: [ main ]
+
+env:
+  PROJECT_PATH: src/JubanDistributedServiceHost/
+  PROJECT_FILE: JubanDistributedServiceHost.csproj
+  SOLUTION_FILE: JubanDistributedServiceHost.sln
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    container: jubanlabs/ci-base
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.301
+    - name: prepare variables for release
+      if: ${{ startsWith(github.ref,'refs/tags/v') }}
+      run: |
+        echo "ALPHA=" >> $GITHUB_ENV
+        echo "PackConfiguration=Release" >> $GITHUB_ENV
+
+    - name: prepare variables for pre-release
+      if: ${{ !startsWith(github.ref,'refs/tags/v') }}
+      run: |
+        echo "ALPHA=-alpha.$GITHUB_RUN_NUMBER" >> $GITHUB_ENV
+        echo "PackConfiguration=Debug" >> $GITHUB_ENV
+
+    - name: update version & add github nuget souce
+      run: |
+        pwd
+        echo $ALPHA
+        sed -i "s/<\/Version/$ALPHA<\/Version/" $PROJECT_PATH$PROJECT_FILE
+        
+    - name: restore dependencies
+      run: dotnet restore
+
+    - name: build
+      run: dotnet build -c ${PackConfiguration} --no-restore
+
+    - name: publish
+      run: dotnet publish -c ${PackConfiguration} --no-build $PROJECT_PATH$PROJECT_FILE
