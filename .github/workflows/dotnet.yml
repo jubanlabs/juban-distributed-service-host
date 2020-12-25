@@ -52,7 +52,7 @@ jobs:
 
     - name: build image
       env: 
-        PAT: ${{ secrets.PAT_PUB_REPO }}   
+        PAT: ${{ secrets.PAT_PUB_PACKAGE }}   
       run: |
         cp -r ${PROJECT_PATH}bin/${PackConfiguration}/netcoreapp3.1/publish .
         echo $PAT | docker login ghcr.io -u ${{ github.actor }} --password-stdin
