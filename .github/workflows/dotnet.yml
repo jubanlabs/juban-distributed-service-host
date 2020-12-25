@@ -54,4 +54,7 @@ jobs:
       env: 
         PAT: ${{ secrets.PAT_PUB_REPO }}   
       run: |
-        echo $PAT | docker login ghcr.io -u zefeiji --password-stdin
+        cp -r ${PROJECT_PATH}bin/${PackConfiguration}/netcoreapp3.1/publish .
+        echo $PAT | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        docker build --pull -t ghcr.io/jubanlabs/juban-distributed-service-host:$GITHUB_SHA .
+        docker push ghcr.io/jubanlabs/juban-distributed-service-host:$GITHUB_SHA
