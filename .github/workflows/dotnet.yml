@@ -50,3 +50,9 @@ jobs:
 
     - name: publish
       run: dotnet publish -c ${PackConfiguration} --no-build $PROJECT_PATH$PROJECT_FILE
+
+    - name: build image
+      env: 
+        PAT: ${{ secrets.PAT_PUB_REPO }}   
+      run: |
+        echo $PAT | docker login ghcr.io -u zefeiji --password-stdin
